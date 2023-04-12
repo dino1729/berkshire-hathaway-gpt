@@ -1,6 +1,6 @@
-# Paul Graham GPT
+# Berkshire Hathaway GPT
 
-AI-powered search and chat for [Paul Graham's](https://twitter.com/paulg) [essays](http://www.paulgraham.com/articles.html).
+AI-powered search and chat for [Berkshire Hathaway's] [annual letters](https://www.berkshirehathaway.com/letters/letters.html).
 
 All code & data used is 100% open-source.
 
@@ -8,13 +8,11 @@ All code & data used is 100% open-source.
 
 The dataset is a CSV file containing all text & embeddings used.
 
-Download it [here](https://drive.google.com/file/d/1BxcPw2mn0VYFucc62wlt9H0nQiOu38ki/view?usp=sharing).
-
 I recommend getting familiar with fetching, cleaning, and storing data as outlined in the scraping and embedding scripts below, but feel free to skip those steps and just use the dataset.
 
 ## How It Works
 
-Paul Graham GPT provides 2 things:
+Berkshire Hathaway GPT provides 2 things:
 
 1. A search interface.
 2. A chat interface.
@@ -64,7 +62,7 @@ I recommend turning on Row Level Security and setting up a service role to use w
 3. Clone repo
 
 ```bash
-git clone https://github.com/mckaywrigley/paul-graham-gpt.git
+git clone https://github.com/dino1729/berkshire-hathaway-gpt.git
 ```
 
 4. Install dependencies
@@ -92,7 +90,7 @@ SUPABASE_SERVICE_ROLE_KEY=
 npm run scrape
 ```
 
-This scrapes all of the essays from Paul Graham's website and saves them to a json file.
+This scrapes all of the essays from Berkshire Hathaway's website and saves them to a json file.
 
 7. Run embedding script
 
@@ -116,15 +114,9 @@ npm run dev
 
 ## Credits
 
-Thanks to [Paul Graham](https://twitter.com/paulg) for his writing.
+Thanks to [Berkshire Hathaway] for his writing.
 
-I highly recommend you read his essays.
-
-3 years ago they convinced me to learn to code, and it changed my life.
-
-## Contact
-
-If you have any questions, feel free to reach out to me on [Twitter](https://twitter.com/mckaywrigley)!
+I highly recommend you read the annual letters.
 
 ## Notes
 
