@@ -3,6 +3,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import fs from "fs";
 import { encode } from "gpt-3-encoder";
+import pdfParse from 'pdf-parse';
 
 const BASE_URL = "https://www.berkshirehathaway.com/letters/";
 const CHUNK_SIZE = 200;
@@ -11,17 +12,18 @@ const getLinks = async () => {
   const html = await axios.get(`${BASE_URL}letters.html`);
   const $ = cheerio.load(html.data);
   const tables = $("table");
+  //console.log(tables.length)
 
   const linksArr: { url: string; year: string }[] = [];
 
   tables.each((i, table) => {
-    if (i === 2) {
+    if (i == 1) {
       const links = $(table).find("a");
       links.each((i, link) => {
         const url = $(link).attr("href");
         const year = $(link).text();
 
-        if (url && url.endsWith(".html")) {
+        if (url && (url.endsWith(".html") || url.endsWith(".pdf"))) {
           const linkObj = {
             url,
             year
@@ -33,7 +35,32 @@ const getLinks = async () => {
     }
   });
 
+  //console.log(linksArr);
   return linksArr;
+};
+
+const extractDate = (text: string) => {
+  const cleanedText = text.replace(/\s+/g, " ");
+  const date = cleanedText.match(/([A-Z][a-z]+ [0-9]{4})/);
+  let dateStr = "";
+  let textWithoutDate = "";
+
+  if (date) {
+    dateStr = date[0];
+    textWithoutDate = cleanedText.replace(date[0], "");
+  }
+
+  return [dateStr, textWithoutDate];
+};
+
+const extractLetterText = (text: string) => {
+  let letterText = text.replace(/\n/g, " ");
+  letterText = letterText.replace(/\.([a-zA-Z])/g, ". $1");
+
+  const split = letterText.split(". ").filter((s) => s);
+  const lastSentence = split[split.length - 1];
+
+  return letterText;
 };
 
 const getLetter = async (linkObj: { url: string; year: string }) => {
@@ -50,44 +77,58 @@ const getLetter = async (linkObj: { url: string; year: string }) => {
   };
 
   const fullLink = BASE_URL + url;
-  const html = await axios.get(fullLink);
-  const $ = cheerio.load(html.data);
-  const tables = $("table");
+  console.log(fullLink);
 
-  tables.each((i, table) => {
-    if (i === 1) {
-      const text = $(table).text();
+if (fullLink.endsWith(".html")) {
+    const html = await axios.get(fullLink);
+    const $ = cheerio.load(html.data);
 
-      let cleanedText = text.replace(/\s+/g, " ");
-      cleanedText = cleanedText.replace(/\.([a-zA-Z])/g, ". $1");
+    // const paragraphs = $("body").find("p");
+    // const letterText = paragraphs
+    //   .map((_, el) => $(el).text())
+    //   .get()
+    //   .join("\n");
 
-      const date = cleanedText.match(/([A-Z][a-z]+ [0-9]{4})/);
-      let dateStr = "";
-      let textWithoutDate = "";
+    // Use cheerio to extract text with newlines
+    const letterText = $('html *').contents().map(function () {
+      return (this.type === 'text') ? $(this).text() + '\n' : '';
+    }).get().join('');
+    console.log(letterText.length);
 
-      if (date) {
-        dateStr = date[0];
-        textWithoutDate = cleanedText.replace(date[0], "");
-      }
+    const [dateStr, textWithoutDate] = extractDate(letterText);
+    const trimmedContent = extractLetterText(textWithoutDate).trim();
+    console.log(trimmedContent.length);
 
-      let letterText = textWithoutDate.replace(/\n/g, " ");
+    letter = {
+      year,
+      url: fullLink,
+      date: dateStr,
+      content: trimmedContent,
+      length: trimmedContent.length,
+      tokens: encode(trimmedContent).length,
+      chunks: []
+    };
+  } else if (fullLink.endsWith(".pdf")) {
+    const pdfBuffer = await axios.get(fullLink, { responseType: "arraybuffer" });
+    const pdfText = await pdfParse(pdfBuffer.data);
 
-      const split = letterText.split(". ").filter((s) => s);
-      const lastSentence = split[split.length - 1];
+    const { text } = pdfText;
+    const [dateStr, textWithoutDate] = extractDate(text);
+    const letterText = extractLetterText(textWithoutDate);
 
-      const trimmedContent = letterText.trim();
+    const trimmedContent = letterText.trim();
+    console.log(trimmedContent.length);
 
-      letter = {
-        year,
-        url: fullLink,
-        date: dateStr,
-        content: trimmedContent,
-        length: trimmedContent.length,
-        tokens: encode(trimmedContent).length,
-        chunks: []
-      };
-    }
-  });
+    letter = {
+      year,
+      url: fullLink,
+      date: dateStr,
+      content: trimmedContent,
+      length: trimmedContent.length,
+      tokens: encode(trimmedContent).length,
+      chunks: []
+    };
+  }
 
   return letter;
 };
@@ -111,7 +152,7 @@ const chunkLetter = async (letter: BHLetter) => {
         chunkText = "";
       }
 
-      if (sentence[sentence.length - 1].match(/[a-z0-9]/i)) {
+      if (sentence && sentence[sentence.length - 1].match(/[a-z0-9]/i)) {
         chunkText += sentence + ". ";
       } else {
         chunkText += sentence + " ";
@@ -164,6 +205,7 @@ const chunkLetter = async (letter: BHLetter) => {
 
 (async () => {
   const links = await getLinks();
+  //console.log(links);
 
   let letters = [];
 
@@ -174,7 +216,7 @@ const chunkLetter = async (letter: BHLetter) => {
   }
 
   const json: BHJSON = {
-    current_date: "2023-03-01",
+    current_date: "2023-04-12",
     author: "Berkshire Hathaway",
     url: "https://www.berkshirehathaway.com/letters/letters.html",
     length: letters.reduce((acc, letter) => acc + letter.length, 0),

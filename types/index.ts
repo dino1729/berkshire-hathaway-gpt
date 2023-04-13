@@ -32,5 +32,5 @@ export type BHJSON = {
   url: string;
   length: number;
   tokens: number;
-  essays: BHLetter[];
+  letters: BHLetter[];
 };
