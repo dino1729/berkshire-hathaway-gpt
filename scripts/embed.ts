@@ -1,4 +1,4 @@
-import { PGEssay, PGJSON } from "@/types";
+import { BHLetter, BHJSON } from "@/types";
 import { loadEnvConfig } from "@next/env";
 import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
@@ -11,7 +11,7 @@ const deploymentname = process.env.AZURE_OPENAI_DEPLOYMENT;
 let base_url = `${baseurl}openai/deployments/${deploymentname}`;
 //let url = `${baseurl}openai/deployments/${deploymentname}/embeddings?api-version=2022-12-01`;
 
-const generateEmbeddings = async (essays: PGEssay[]) => {
+const generateEmbeddings = async (letters: BHLetter[]) => {
   //const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
   //const openai = new OpenAIApi(configuration);
   const configuration = new Configuration({
@@ -22,13 +22,13 @@ const generateEmbeddings = async (essays: PGEssay[]) => {
 
   const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
-  for (let i = 0; i < essays.length; i++) {
-    const section = essays[i];
+  for (let i = 0; i < letters.length; i++) {
+    const section = letters[i];
 
     for (let j = 0; j < section.chunks.length; j++) {
       const chunk = section.chunks[j];
 
-      const { essay_title, essay_url, essay_date, essay_thanks, content, content_length, content_tokens } = chunk;
+      const { letter_year, letter_url, letter_date, content, content_length, content_tokens } = chunk;
 
       const embeddingResponse = await openai.createEmbedding({
         deployment: "text-embedding-ada-002",
@@ -46,12 +46,11 @@ const generateEmbeddings = async (essays: PGEssay[]) => {
       const [{ embedding }] = embeddingResponse.data.data;
 
       const { data, error } = await supabase
-        .from("pg")
+        .from("bh")
         .insert({
-          essay_title,
-          essay_url,
-          essay_date,
-          essay_thanks,
+          letter_year,
+          letter_url,
+          letter_date,
           content,
           content_length,
           content_tokens,
@@ -71,7 +70,7 @@ const generateEmbeddings = async (essays: PGEssay[]) => {
 };
 
 (async () => {
-  const book: PGJSON = JSON.parse(fs.readFileSync("scripts/pg.json", "utf8"));
+  const book: BHJSON = JSON.parse(fs.readFileSync("scripts/bh.json", "utf8"));
 
-  await generateEmbeddings(book.essays);
+  await generateEmbeddings(book.letters);
 })();

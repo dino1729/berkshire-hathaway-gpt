@@ -1,30 +1,30 @@
-import { PGChunk, PGEssay, PGJSON } from "@/types";
+import { BHChunk, BHLetter, BHJSON } from "@/types";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import fs from "fs";
 import { encode } from "gpt-3-encoder";
 
-const BASE_URL = "http://www.paulgraham.com/";
+const BASE_URL = "https://www.berkshirehathaway.com/letters/";
 const CHUNK_SIZE = 200;
 
 const getLinks = async () => {
-  const html = await axios.get(`${BASE_URL}articles.html`);
+  const html = await axios.get(`${BASE_URL}letters.html`);
   const $ = cheerio.load(html.data);
   const tables = $("table");
 
-  const linksArr: { url: string; title: string }[] = [];
+  const linksArr: { url: string; year: string }[] = [];
 
   tables.each((i, table) => {
     if (i === 2) {
       const links = $(table).find("a");
       links.each((i, link) => {
         const url = $(link).attr("href");
-        const title = $(link).text();
+        const year = $(link).text();
 
         if (url && url.endsWith(".html")) {
           const linkObj = {
             url,
-            title
+            year
           };
 
           linksArr.push(linkObj);
@@ -36,14 +36,13 @@ const getLinks = async () => {
   return linksArr;
 };
 
-const getEssay = async (linkObj: { url: string; title: string }) => {
-  const { title, url } = linkObj;
+const getLetter = async (linkObj: { url: string; year: string }) => {
+  const { year, url } = linkObj;
 
-  let essay: PGEssay = {
-    title: "",
+  let letter: BHLetter = {
+    year: "",
     url: "",
     date: "",
-    thanks: "",
     content: "",
     length: 0,
     tokens: 0,
@@ -71,31 +70,17 @@ const getEssay = async (linkObj: { url: string; title: string }) => {
         textWithoutDate = cleanedText.replace(date[0], "");
       }
 
-      let essayText = textWithoutDate.replace(/\n/g, " ");
-      let thanksTo = "";
+      let letterText = textWithoutDate.replace(/\n/g, " ");
 
-      const split = essayText.split(". ").filter((s) => s);
+      const split = letterText.split(". ").filter((s) => s);
       const lastSentence = split[split.length - 1];
 
-      if (lastSentence && lastSentence.includes("Thanks to")) {
-        const thanksToSplit = lastSentence.split("Thanks to");
+      const trimmedContent = letterText.trim();
 
-        if (thanksToSplit[1].trim()[thanksToSplit[1].trim().length - 1] === ".") {
-          thanksTo = "Thanks to " + thanksToSplit[1].trim();
-        } else {
-          thanksTo = "Thanks to " + thanksToSplit[1].trim() + ".";
-        }
-
-        essayText = essayText.replace(thanksTo, "");
-      }
-
-      const trimmedContent = essayText.trim();
-
-      essay = {
-        title,
+      letter = {
+        year,
         url: fullLink,
         date: dateStr,
-        thanks: thanksTo.trim(),
         content: trimmedContent,
         length: trimmedContent.length,
         tokens: encode(trimmedContent).length,
@@ -104,13 +89,13 @@ const getEssay = async (linkObj: { url: string; title: string }) => {
     }
   });
 
-  return essay;
+  return letter;
 };
 
-const chunkEssay = async (essay: PGEssay) => {
-  const { title, url, date, thanks, content, ...chunklessSection } = essay;
+const chunkLetter = async (letter: BHLetter) => {
+  const { year, url, date, content, ...chunklessSection } = letter;
 
-  let essayTextChunks = [];
+  let letterTextChunks = [];
 
   if (encode(content).length > CHUNK_SIZE) {
     const split = content.split(". ");
@@ -122,7 +107,7 @@ const chunkEssay = async (essay: PGEssay) => {
       const chunkTextTokenLength = encode(chunkText).length;
 
       if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
-        essayTextChunks.push(chunkText);
+        letterTextChunks.push(chunkText);
         chunkText = "";
       }
 
@@ -133,19 +118,18 @@ const chunkEssay = async (essay: PGEssay) => {
       }
     }
 
-    essayTextChunks.push(chunkText.trim());
+    letterTextChunks.push(chunkText.trim());
   } else {
-    essayTextChunks.push(content.trim());
+    letterTextChunks.push(content.trim());
   }
 
-  const essayChunks = essayTextChunks.map((text) => {
+  const letterChunks = letterTextChunks.map((text) => {
     const trimmedText = text.trim();
 
-    const chunk: PGChunk = {
-      essay_title: title,
-      essay_url: url,
-      essay_date: date,
-      essay_thanks: thanks,
+    const chunk: BHChunk = {
+      letter_year: year,
+      letter_url: url,
+      letter_date: date,
       content: trimmedText,
       content_length: trimmedText.length,
       content_tokens: encode(trimmedText).length,
@@ -155,24 +139,24 @@ const chunkEssay = async (essay: PGEssay) => {
     return chunk;
   });
 
-  if (essayChunks.length > 1) {
-    for (let i = 0; i < essayChunks.length; i++) {
-      const chunk = essayChunks[i];
-      const prevChunk = essayChunks[i - 1];
+  if (letterChunks.length > 1) {
+    for (let i = 0; i < letterChunks.length; i++) {
+      const chunk = letterChunks[i];
+      const prevChunk = letterChunks[i - 1];
 
       if (chunk.content_tokens < 100 && prevChunk) {
         prevChunk.content += " " + chunk.content;
         prevChunk.content_length += chunk.content_length;
         prevChunk.content_tokens += chunk.content_tokens;
-        essayChunks.splice(i, 1);
+        letterChunks.splice(i, 1);
         i--;
       }
     }
   }
 
-  const chunkedSection: PGEssay = {
-    ...essay,
-    chunks: essayChunks
+  const chunkedSection: BHLetter = {
+    ...letter,
+    chunks: letterChunks
   };
 
   return chunkedSection;
@@ -181,22 +165,22 @@ const chunkEssay = async (essay: PGEssay) => {
 (async () => {
   const links = await getLinks();
 
-  let essays = [];
+  let letters = [];
 
   for (let i = 0; i < links.length; i++) {
-    const essay = await getEssay(links[i]);
-    const chunkedEssay = await chunkEssay(essay);
-    essays.push(chunkedEssay);
+    const letter = await getLetter(links[i]);
+    const chunkedletter = await chunkLetter(letter);
+    letters.push(chunkedletter);
   }
 
-  const json: PGJSON = {
+  const json: BHJSON = {
     current_date: "2023-03-01",
-    author: "Paul Graham",
-    url: "http://www.paulgraham.com/articles.html",
-    length: essays.reduce((acc, essay) => acc + essay.length, 0),
-    tokens: essays.reduce((acc, essay) => acc + essay.tokens, 0),
-    essays
+    author: "Berkshire Hathaway",
+    url: "https://www.berkshirehathaway.com/letters/letters.html",
+    length: letters.reduce((acc, letter) => acc + letter.length, 0),
+    tokens: letters.reduce((acc, letter) => acc + letter.tokens, 0),
+    letters
   };
 
-  fs.writeFileSync("scripts/pg.json", JSON.stringify(json));
+  fs.writeFileSync("scripts/bh.json", JSON.stringify(json));
 })();
