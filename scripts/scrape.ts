@@ -12,7 +12,6 @@ const getLinks = async () => {
   const html = await axios.get(`${BASE_URL}letters.html`);
   const $ = cheerio.load(html.data);
   const tables = $("table");
-  //console.log(tables.length)
 
   const linksArr: { url: string; year: string }[] = [];
   tables.each((i, table) => {
@@ -33,9 +32,55 @@ const getLinks = async () => {
       });
     }
   });
-
-  //console.log(linksArr);
   return linksArr;
+};
+
+// A helper function to get the absolute URL from a relative one
+const formFullUrl = (url: string) => {
+    return BASE_URL + url;
+};
+
+// A modified function to recursively look for links inside each link that linksArr has
+const getLinksRecursively = async () => {
+  // Get the initial links from the main page
+  const initialLinks = await getLinks();
+  // An array to store the final links
+  const finalLinks: { url: string; year: string }[] = [];
+  // A recursive function to get the links from a given page
+  const getLinksFromPage = async (pageUrl: string) => {
+    // Get the HTML of the page
+    const html = await axios.get(pageUrl);
+    const $ = cheerio.load(html.data);
+    // Find all the links in the page
+    const links = $("a");
+    // Loop through each link
+    links.each((i, link) => {
+      // Get the URL and the text of the link
+      const url = $(link).attr("href");
+      const yearMatch = $(link).text().match(/\d{4}/);
+      const year = yearMatch ? yearMatch[0] : '';
+      // Check if the URL contains the BASE_URL and is not already in the finalLinks array
+      if (url && url.endsWith(".pdf")) {
+        // Create a link object with the absolute URL and the text
+        const linkObj = {
+          url,
+          year
+        };
+        // Push the link object to the finalLinks array
+        finalLinks.push(linkObj);
+      }
+    });
+  };
+
+  // Loop through each initial link and call the recursive function with its URL
+  for (const initialLink of initialLinks) {
+    // Use the getAbsoluteUrl function to get the valid link
+    const validLink = formFullUrl(initialLink.url);
+    //console.log(validLink);
+    await getLinksFromPage(validLink);
+  }
+  // Return the finalLinks array
+  return finalLinks;
 };
 
 const extractDate = (text: string) => {
@@ -197,10 +242,37 @@ const chunkLetter = async (letter: BHLetter) => {
 
 (async () => {
   const links = await getLinks();
+  const recursiveLinks = await getLinksRecursively();
+  const allLinks = links.concat(recursiveLinks);
+  allLinks.sort((a, b) => {
+    return parseInt(a.year) - parseInt(b.year);
+  });
+  const filteredLinks = allLinks.reduce((acc, curr) => {
+    const year = curr.year;
+    const url = curr.url;
+    const existingYear = acc.find(item => item.year === year);
+    if (url.endsWith('pdf')) {
+      if (existingYear) {
+        if (existingYear.year === year) {
+          existingYear.url = url;
+        }
+      } else {
+        acc.push({ url, year });
+      }
+    } else {
+      if (!existingYear) {
+        acc.push({ url, year });
+      }
+    }
+    return acc;
+  }, []);
+  filteredLinks.sort((a, b) => {
+    return parseInt(a.year) - parseInt(b.year);
+  });
   let letters = [];
 
-  for (let i = 0; i < links.length; i++) {
-    const letter = await getLetter(links[i]);
+  for (let i = 0; i < filteredLinks.length; i++) {
+    const letter = await getLetter(filteredLinks[i]);
     const chunkedletter = await chunkLetter(letter);
     letters.push(chunkedletter);
   }
