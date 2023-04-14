@@ -29,6 +29,7 @@ yarn-error.log*
 .env*.local
 nohup.out
 package-lock.json
+/scripts/bh.json
 
 # vercel
 .vercel

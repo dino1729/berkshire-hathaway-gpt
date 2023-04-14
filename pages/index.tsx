@@ -1,7 +1,7 @@
 import { Answer } from "@/components/Answer/Answer";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
-import { PGChunk } from "@/types";
+import { BHChunk } from "@/types";
 import { IconArrowRight, IconExternalLink, IconSearch } from "@tabler/icons-react";
 import endent from "endent";
 import Head from "next/head";
@@ -11,7 +11,7 @@ export default function Home() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState<string>("");
-  const [chunks, setChunks] = useState<PGChunk[]>([]);
+  const [chunks, setChunks] = useState<BHChunk[]>([]);
   const [answer, setAnswer] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -49,7 +49,7 @@ export default function Home() {
       throw new Error(searchResponse.statusText);
     }
 
-    const results: PGChunk[] = await searchResponse.json();
+    const results: BHChunk[] = await searchResponse.json();
 
     setChunks(results);
 
@@ -89,7 +89,7 @@ export default function Home() {
       throw new Error(searchResponse.statusText);
     }
 
-    const results: PGChunk[] = await searchResponse.json();
+    const results: BHChunk[] = await searchResponse.json();
 
     setChunks(results);
 
@@ -199,10 +199,10 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Paul Graham GPT</title>
+        <title>Berkshire Hathaway GPT</title>
         <meta
           name="description"
-          content={`AI-powered search and chat for Paul Graham's essays.`}
+          content={`AI-powered search and chat for Berkshire Hathaway's annual letters.`}
         />
         <meta
           name="viewport"
@@ -357,12 +357,12 @@ export default function Home() {
                       <div className="mt-4 border border-zinc-600 rounded-lg p-4">
                         <div className="flex justify-between">
                           <div>
-                            <div className="font-bold text-xl">{chunk.essay_title}</div>
-                            <div className="mt-1 font-bold text-sm">{chunk.essay_date}</div>
+                            <div className="font-bold text-xl">{chunk.letter_year}</div>
+                            <div className="mt-1 font-bold text-sm">{chunk.letter_date}</div>
                           </div>
                           <a
                             className="hover:opacity-50 ml-2"
-                            href={chunk.essay_url}
+                            href={chunk.letter_url}
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -383,12 +383,12 @@ export default function Home() {
                     <div className="mt-4 border border-zinc-600 rounded-lg p-4">
                       <div className="flex justify-between">
                         <div>
-                          <div className="font-bold text-xl">{chunk.essay_title}</div>
-                          <div className="mt-1 font-bold text-sm">{chunk.essay_date}</div>
+                          <div className="font-bold text-xl">{chunk.letter_year}</div>
+                          <div className="mt-1 font-bold text-sm">{chunk.letter_date}</div>
                         </div>
                         <a
                           className="hover:opacity-50 ml-2"
-                          href={chunk.essay_url}
+                          href={chunk.letter_url}
                           target="_blank"
                           rel="noreferrer"
                         >

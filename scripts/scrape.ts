@@ -5,8 +5,8 @@ import fs from "fs";
 import { encode } from "gpt-3-encoder";
 import pdfParse from 'pdf-parse';
 
-const BASE_URL = "https://www.berkshirehathaway.com/letters/";
 const CHUNK_SIZE = 200;
+const BASE_URL = "https://www.berkshirehathaway.com/letters/";
 
 const getLinks = async () => {
   const html = await axios.get(`${BASE_URL}letters.html`);
@@ -15,7 +15,6 @@ const getLinks = async () => {
   //console.log(tables.length)
 
   const linksArr: { url: string; year: string }[] = [];
-
   tables.each((i, table) => {
     if (i == 1) {
       const links = $(table).find("a");
@@ -83,17 +82,10 @@ if (fullLink.endsWith(".html")) {
     const html = await axios.get(fullLink);
     const $ = cheerio.load(html.data);
 
-    // const paragraphs = $("body").find("p");
-    // const letterText = paragraphs
-    //   .map((_, el) => $(el).text())
-    //   .get()
-    //   .join("\n");
-
     // Use cheerio to extract text with newlines
     const letterText = $('html *').contents().map(function () {
       return (this.type === 'text') ? $(this).text() + '\n' : '';
     }).get().join('');
-    console.log(letterText.length);
 
     const [dateStr, textWithoutDate] = extractDate(letterText);
     const trimmedContent = extractLetterText(textWithoutDate).trim();
@@ -205,8 +197,6 @@ const chunkLetter = async (letter: BHLetter) => {
 
 (async () => {
   const links = await getLinks();
-  //console.log(links);
-
   let letters = [];
 
   for (let i = 0; i < links.length; i++) {

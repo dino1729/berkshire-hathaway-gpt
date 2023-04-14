@@ -16,14 +16,14 @@ export const Footer: FC = () => {
         >
           Dinozard
         </a>
-        based on the essays of
+        based on the Annual Letters of
         <a
           className="hover:opacity-50 ml-1"
-          href="https://twitter.com/paulg"
+          href="https://twitter.com/"
           target="_blank"
           rel="noreferrer"
         >
-          Paul Graham
+          Berkshire Hathaway
         </a>
         .
       </div>
@@ -40,7 +40,7 @@ export const Footer: FC = () => {
 
         <a
           className="flex items-center hover:opacity-50"
-          href="https://github.com/dino1729/paul-graham-gpt"
+          href="https://github.com/dino1729/berkshire-hathaway-gpt"
           target="_blank"
           rel="noreferrer"
         >
