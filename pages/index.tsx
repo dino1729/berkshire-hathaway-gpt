@@ -150,18 +150,18 @@ export default function Home() {
       return;
     }
 
-    localStorage.setItem("PG_KEY", apiKey);
-    localStorage.setItem("PG_MATCH_COUNT", matchCount.toString());
-    localStorage.setItem("PG_MODE", mode);
+    localStorage.setItem("BH_KEY", apiKey);
+    localStorage.setItem("BH_MATCH_COUNT", matchCount.toString());
+    localStorage.setItem("BH_MODE", mode);
 
     setShowSettings(false);
     inputRef.current?.focus();
   };
 
   const handleClear = () => {
-    localStorage.removeItem("PG_KEY");
-    localStorage.removeItem("PG_MATCH_COUNT");
-    localStorage.removeItem("PG_MODE");
+    localStorage.removeItem("BH_KEY");
+    localStorage.removeItem("BH_MATCH_COUNT");
+    localStorage.removeItem("BH_MODE");
 
     setApiKey("");
     setMatchCount(5);
@@ -177,20 +177,20 @@ export default function Home() {
   }, [matchCount]);
 
   useEffect(() => {
-    const PG_KEY = localStorage.getItem("PG_KEY");
-    const PG_MATCH_COUNT = localStorage.getItem("PG_MATCH_COUNT");
-    const PG_MODE = localStorage.getItem("PG_MODE");
+    const BH_KEY = localStorage.getItem("BH_KEY");
+    const BH_MATCH_COUNT = localStorage.getItem("BH_MATCH_COUNT");
+    const BH_MODE = localStorage.getItem("BH_MODE");
 
-    if (PG_KEY) {
-      setApiKey(PG_KEY);
+    if (BH_KEY) {
+      setApiKey(BH_KEY);
     }
 
-    if (PG_MATCH_COUNT) {
-      setMatchCount(parseInt(PG_MATCH_COUNT));
+    if (BH_MATCH_COUNT) {
+      setMatchCount(parseInt(BH_MATCH_COUNT));
     }
 
-    if (PG_MODE) {
-      setMode(PG_MODE as "search" | "chat");
+    if (BH_MODE) {
+      setMode(BH_MODE as "search" | "chat");
     }
 
     inputRef.current?.focus();
@@ -294,7 +294,7 @@ export default function Home() {
                   ref={inputRef}
                   className="h-12 w-full rounded-full border border-zinc-600 pr-12 pl-11 focus:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800 sm:h-16 sm:py-2 sm:pr-16 sm:pl-16 sm:text-lg"
                   type="text"
-                  placeholder="How do I start a startup?"
+                  placeholder="How do I pick good stocks?"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}

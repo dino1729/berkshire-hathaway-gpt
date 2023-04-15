@@ -5,18 +5,19 @@ import fs from "fs";
 import { Configuration, OpenAIApi } from "openai";
 
 loadEnvConfig("");
-const apikey = process.env.AZURE_OPENAI_APIKEY;
-const baseurl = process.env.AZURE_OPENAI_ENDPOINT;
-const deploymentname = process.env.AZURE_OPENAI_DEPLOYMENT;
-let base_url = `${baseurl}openai/deployments/${deploymentname}`;
-//let url = `${baseurl}openai/deployments/${deploymentname}/embeddings?api-version=2022-12-01`;
+const openaiApiKey = process.env.AZURE_OPENAI_APIKEY!;
+const openaiEndpoint = process.env.AZURE_OPENAI_ENDPOINT!;
+const openaiEmbedding = process.env.AZURE_OPENAI_EMBEDDING!;
+const openaiModel = process.env.AZURE_OPENAI_MODEL!;
+const openaiVersion = process.env.AZURE_OPENAI_VERSION!;
+let base_url = `${openaiEndpoint}openai/deployments/${openaiEmbedding}`;
 
 const generateEmbeddings = async (letters: BHLetter[]) => {
   //const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY });
   //const openai = new OpenAIApi(configuration);
   const configuration = new Configuration({
     basePath: base_url,
-    apiKey: apikey,
+    apiKey: openaiApiKey,
   });
   const openai = new OpenAIApi(configuration);
 
@@ -31,15 +32,15 @@ const generateEmbeddings = async (letters: BHLetter[]) => {
       const { letter_year, letter_url, letter_date, content, content_length, content_tokens } = chunk;
 
       const embeddingResponse = await openai.createEmbedding({
-        deployment: "text-embedding-ada-002",
+        deployment: openaiEmbedding,
         input: content
       },
       {
         headers: {
-          "api-key": apikey,
+          "api-key": openaiApiKey,
         },
         params: {
-          "api-version": "2022-12-01",
+          "api-version": openaiVersion,
         },
       });
 
@@ -64,7 +65,7 @@ const generateEmbeddings = async (letters: BHLetter[]) => {
         console.log("saved", i, j);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 900));
     }
   }
 };

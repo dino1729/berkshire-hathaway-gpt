@@ -2,20 +2,29 @@ import { OpenAIModel } from "@/types";
 import { createClient } from "@supabase/supabase-js";
 import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
 
-export const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+export const supabaseAdmin = createClient(supabaseUrl, supabaseKey);
 
 export const OpenAIStream = async (prompt: string, apiKey: string) => {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
-  const res = await fetch("https://textllmapi.openai.azure.com/openai/deployments/gpt-3p5-turbo/completions?api-version=2022-12-01", {
+  const openaiApiKey = process.env.AZURE_OPENAI_APIKEY!;
+  const openaiEndpoint = process.env.AZURE_OPENAI_ENDPOINT!;
+  const openaiEmbedding = process.env.AZURE_OPENAI_EMBEDDING!;
+  const openaiModel = process.env.AZURE_OPENAI_MODEL!;
+  const openaiVersion = process.env.AZURE_OPENAI_VERSION!;
+
+  const res = await fetch(`${openaiEndpoint}/openai/deployments/${openaiModel}/completions?api-version=${openaiVersion}`, {
     headers: {
       "Content-Type": "application/json",
-      "api-key": apiKey
+      "api-key": openaiApiKey
     },
     method: "POST",
     body: JSON.stringify({
-      "model": "gpt-3p5-turbo",
+      "model": openaiModel,
       "prompt": "<|im_start|>system\nYou are a helpful assistant that accurately answers queries using Paul Graham's essays. Use the text provided to form your answer, but avoid copying word-for-word from the essays. Try to use your own words when possible. Keep your answer under 5 sentences. Be accurate, helpful, concise, and clear.\n<|im_end|>\n<|im_start|>user\n"+prompt+"\n<|im_end|>\n<|im_start|>assistant\n\n<|im_end|>\n",
       "max_tokens": 150,
       "temperature": 0.8,

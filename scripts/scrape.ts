@@ -85,7 +85,8 @@ const getLinksRecursively = async () => {
 
 const extractDate = (text: string) => {
   const cleanedText = text.replace(/\s+/g, " ");
-  const date = cleanedText.match(/([A-Z][a-z]+ [0-9]{4})/);
+  // change the regular expression to match Month Day, Year
+  const date = cleanedText.match(/([A-Z][a-z]+ [0-9]{1,2}, [0-9]{4})/);
   let dateStr = "";
   let textWithoutDate = "";
 

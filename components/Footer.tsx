@@ -19,7 +19,7 @@ export const Footer: FC = () => {
         based on the Annual Letters of
         <a
           className="hover:opacity-50 ml-1"
-          href="https://twitter.com/dino1729"
+          href="https://twitter.com/warrenbuffett"
           target="_blank"
           rel="noreferrer"
         >

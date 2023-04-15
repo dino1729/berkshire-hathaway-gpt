@@ -1,3 +1,5 @@
+Forked from Mckay Wrigley's https://github.com/mckaywrigley/paul-graham-gpt
+
 # Berkshire Hathaway GPT
 
 AI-powered search and chat for [Berkshire Hathaway's] [annual letters](https://www.berkshirehathaway.com/letters/letters.html).
@@ -19,7 +21,7 @@ Berkshire Hathaway GPT provides 2 things:
 
 ### Search
 
-Search was created with [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings) (`text-embedding-ada-002`).
+Search was created with [Azure OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings) (`text-embedding-ada-002`).
 
 First, we loop over the essays and generate embeddings for each chunk of text.
 
@@ -43,9 +45,9 @@ Here's a quick overview of how to run it locally.
 
 ### Requirements
 
-1. Set up OpenAI
+1. Set up Azure OpenAI
 
-You'll need an OpenAI API key to generate embeddings.
+You'll need an Azure OpenAI API key to generate embeddings.
 
 2. Set up Supabase and create a database
 
@@ -76,7 +78,11 @@ npm i
 Create a .env.local file in the root of the repo with the following variables:
 
 ```bash
-OPENAI_API_KEY=
+AZURE_OPENAI_APIKEY=
+AZURE_OPENAI_ENDPOINT=
+AZURE_OPENAI_DEPLOYMENT=
+AZURE_OPENAI_MODEL=
+AZURE_OPENAI_VERSION=
 
 NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
@@ -100,9 +106,9 @@ npm run embed
 
 This reads the json file, generates embeddings for each chunk of text, and saves the results to your database.
 
-There is a 200ms delay between each request to avoid rate limiting.
+There is a 900ms delay between each request to avoid rate limiting.
 
-This process will take 20-30 minutes.
+This process will take a while
 
 ### App
 
@@ -114,14 +120,6 @@ npm run dev
 
 ## Credits
 
-Thanks to [Berkshire Hathaway] for his writing.
+Thanks to Warren Buffet!.
 
-I highly recommend you read the annual letters.
-
-## Notes
-
-I sacrificed composability for simplicity in the app.
-
-Yes, you can make things more modular and reusable.
-
-But I kept pretty much everything in the homepage component for the sake of simplicity.
+I highly recommend you read Berkshire Hathaway's annual letters.
