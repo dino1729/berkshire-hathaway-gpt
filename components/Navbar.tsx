@@ -15,7 +15,7 @@ export const Navbar: FC = () => {
       <div>
         <a
           className="flex items-center hover:opacity-50"
-          href="http://www.paulgraham.com/articles.html"
+          href="https://www.berkshirehathaway.com/letters/letters.html"
           target="_blank"
           rel="noreferrer"
         >

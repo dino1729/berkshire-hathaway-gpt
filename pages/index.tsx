@@ -202,7 +202,7 @@ export default function Home() {
         <title>Berkshire Hathaway GPT</title>
         <meta
           name="description"
-          content={`AI-powered search and chat for Berkshire Hathaway's annual letters.`}
+          content={`AI-powered search and chat for Berkshire Hathaway's Annual Letters.`}
         />
         <meta
           name="viewport"
@@ -401,7 +401,7 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="mt-6 text-center text-lg">{`AI-powered search & chat for Paul Graham's essays.`}</div>
+              <div className="mt-6 text-center text-lg">{`AI-powered search & chat for Berkshire Hathaway's Annual Letters.`}</div>
             )}
           </div>
         </div>
