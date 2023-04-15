@@ -120,6 +120,6 @@ npm run dev
 
 ## Credits
 
-Thanks to Warren Buffet!.
+Thanks, Warren Buffet!
 
 I highly recommend you read Berkshire Hathaway's annual letters.
